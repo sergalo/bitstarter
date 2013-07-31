@@ -77,7 +77,7 @@ var url2str = function (urlpath) {
 	    this.retry(5000); // try again after 5 sec
 	    return ""
 	} else {
-	    
+  
 	    fich.writeFile("temporal.txt", result.toString());
 	}
     });
@@ -94,16 +94,11 @@ if(require.main == module) {
     
     if (program.url != ""){
 	program.file = program.url;
-	sys.puts("si quetiene algo la url");
-	sys.puts(program.url);
-    } else {
-	sys.puts("megcagonsdios");
     }
 
     var checkJson = checkHtmlFile(program.file, program.checks);
     var outJson = JSON.stringify(checkJson, null, 4);
     console.log(outJson);
-    sys.puts(program.file);
 } else {
     exports.checkHtmlFile = checkHtmlFile;
 }
