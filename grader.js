@@ -24,8 +24,13 @@ References:
 var fs = require('fs');
 var program = require('commander');
 var cheerio = require('cheerio');
+
+var sys = require('util'),
+    rest = require('./restler');
+
 var HTMLFILE_DEFAULT = "index.html";
 var CHECKSFILE_DEFAULT = "checks.json";
+var URLHTMLFILE_DEFAULT = "";
 
 var assertFileExists = function(infile) {
     var instr = infile.toString();
@@ -61,14 +66,44 @@ var clone = function(fn) {
     return fn.bind({});
 };
 
+var url2str = function (urlpath) {
+
+    var fich = require('fs');
+    var instr = "";
+
+    rest.get(urlpath).on('complete', function(result) {
+	if (result instanceof Error) {
+	    sys.puts('Error: ' + result.message);
+	    this.retry(5000); // try again after 5 sec
+	    return ""
+	} else {
+	    
+	    fich.writeFile("temporal.txt", result.toString());
+	}
+    });
+    instr = assertFileExists("temporal.txt");
+    return instr;
+};
+
 if(require.main == module) {
     program
         .option('-c, --checks <check_file>', 'Path to checks.json', clone(assertFileExists), CHECKSFILE_DEFAULT)
         .option('-f, --file <html_file>', 'Path to index.html', clone(assertFileExists), HTMLFILE_DEFAULT)
+        .option('-url, --url <url_html_file>', 'Url to index.html', clone(url2str), URLHTMLFILE_DEFAULT)
         .parse(process.argv);
+    
+    if (program.url != ""){
+	program.file = program.url;
+	sys.puts("si quetiene algo la url");
+	sys.puts(program.url);
+    } else {
+	sys.puts("megcagonsdios");
+    }
+
     var checkJson = checkHtmlFile(program.file, program.checks);
     var outJson = JSON.stringify(checkJson, null, 4);
     console.log(outJson);
+    sys.puts(program.file);
 } else {
     exports.checkHtmlFile = checkHtmlFile;
 }
